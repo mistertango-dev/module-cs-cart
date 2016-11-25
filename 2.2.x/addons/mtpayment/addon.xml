@@ -5,14 +5,6 @@
     <priority>3000</priority>
     <position>100</position>
     <status>active</status>
-    <dependencies></dependencies>
-    <translations>
-        <item for="name" lang="DE">Werbeverwaltung</item>
-        <item for="name" lang="ES">Gestor de anuncios</item>
-        <item for="name" lang="FR">Gestions des pubs</item>
-        <item for="name" lang="IT">Amministrazione annunci</item>
-        <item for="name" lang="NL">Advertentiebeheer</item>
-    </translations>
     <opt_queries>
         <item>
             CREATE TABLE ?:callbacks_mtpayment (

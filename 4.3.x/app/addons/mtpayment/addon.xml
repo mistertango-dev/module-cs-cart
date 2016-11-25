@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<addon scheme="3.0" edition_type="ROOT,ULT:VENDOR">
+    <id>mtpayment</id>
+    <version>1.0</version>
+    <default_language>en</default_language>
+    <name>MisterTango</name>
+    <description>MisterTango payments services</description>
+    <priority>100</priority>
+    <status>active</status>
+    <compatibility>
+        <core_version>
+            <min>4.3.0</min>
+            <max>4.3.10</max>
+        </core_version>
+    </compatibility>
+    <queries>
+        <item for="install">
+            CREATE TABLE ?:callbacks_mtpayment (
+                `uuid` VARCHAR(255) NOT NULL,
+                `transaction_id` VARCHAR(255) NOT NULL,
+                `amount` DECIMAL(10,2) NOT NULL,
+                `timestamp` TIMESTAMP NOT NULL,
+                PRIMARY KEY (`uuid`)
+            );
+        </item>
+        <item for="install">
+            INSERT INTO ?:payment_processors (
+                `processor`,
+                `processor_script`,
+                `processor_template`,
+                `admin_template`,
+                `callback`,
+                `type`
+            ) VALUES (
+                'MisterTango',
+                'mtpayment.php',
+                'views/orders/components/payments/cc_outside.tpl',
+                'mtpayment.tpl',
+                'Y',
+                'P'
+            );
+        </item>
+        <item for="uninstall">DROP TABLE ?:callbacks_mtpayment</item>
+        <item for="uninstall">DELETE FROM ?:payment_processors WHERE `processor` = 'MisterTango'</item>
+    </queries>
+</addon>
