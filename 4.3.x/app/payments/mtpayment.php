@@ -8,9 +8,18 @@ if (!defined('PAYMENT_NOTIFICATION')) {
     $psData = fn_get_payment_method_data($_SESSION['cart']['payment_id']);
 
     // Change order status to open as everything is automatic
-    fn_change_order_status($_order_id, STATUSES_ORDER);
+    fn_change_order_status($_order_id, 'P');
 
-    echo '<meta http-equiv="refresh" content="0;url='.fn_url("mtpayment.information?order=$_order_id&init=1").'">';
+    // Lets clear cart
+    $_SESSION['cart'] = array(
+        'user_data' => !empty($_SESSION['cart']['user_data']) ? $_SESSION['cart']['user_data'] : array(),
+        'profile_id' => !empty($_SESSION['cart']['profile_id']) ? $_SESSION['cart']['profile_id'] : 0,
+        'user_id' => !empty($_SESSION['cart']['user_id']) ? $_SESSION['cart']['user_id'] : 0,
+    );
+    $_SESSION['shipping_rates'] = array();
+    unset($_SESSION['shipping_hash']);
 
-    fn_start_payment($_order_id, false);
+    db_query('DELETE FROM ?:user_session_products WHERE session_id = ?s AND type = ?s', Session::get_id(), 'C');
+
+    fn_redirect(fn_url("mtpayment.information?order=$_order_id&init=1"));
 }

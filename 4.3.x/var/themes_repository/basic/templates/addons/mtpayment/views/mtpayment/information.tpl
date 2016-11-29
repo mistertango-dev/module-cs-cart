@@ -9,7 +9,7 @@
         <td>{$order_info.timestamp|date_format:"%y-%m-%d %H:%M:%S"}</td>
         <td>
             {include file="common/status.tpl" status=$order_info.status display="view"}
-            {if $order_info.status eq 'O'}
+            {if $order_info.status eq 'P'}
             <a href="#"
                class="mtpayment-submit"
                data-language="{$language}"

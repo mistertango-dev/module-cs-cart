@@ -85,6 +85,7 @@ function mtpayment_close_order($order_id, $response)
 
     $response['order_status'] = 'P';
 
+    fn_start_payment($order_id, false);
     fn_finish_payment($order_id, $response, false);
     fn_order_placement_routines($order_id, false);
 }
