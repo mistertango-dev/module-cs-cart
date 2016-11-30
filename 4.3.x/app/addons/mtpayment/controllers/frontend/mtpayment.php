@@ -19,7 +19,7 @@ if ($mode == 'information') {
         exit;
     }
 
-    $processor_params = $processor_data['params'];
+    $processor_params = $processor_data['processor_params'];
 
     $language = strtoupper($_SESSION['settings']['cart_languageC']['value']);
     $currency = strtoupper($_SESSION['settings']['secondary_currencyC']['value']);
@@ -27,12 +27,12 @@ if ($mode == 'information') {
     $currencyCo = db_get_field("SELECT ?:currencies.coefficient FROM ?:currencies WHERE ?:currencies.currency_code = ?s", $currency);
     $price = number_format($order_info['total'] / $currencyCo, 2, '.', '');
 
-    $view->assign('init', isset($_GET['init']) && $_GET['init'] == 1 ? 'true' : 'false');
-    $view->assign('username', $processor_params['username']);
-    $view->assign('langauge', $language);
-    $view->assign('email', $order_info['email']);
-    $view->assign('price', $price);
-    $view->assign('currency', $currency);
-    $view->assign('transaction', $order_id . '_' . uniqid());
-    $view->assign('order_info', $order_info);
+    Tygh::$app['view']->assign('init', isset($_GET['init']) && $_GET['init'] == 1 ? 'true' : 'false');
+    Tygh::$app['view']->assign('username', $processor_params['username']);
+    Tygh::$app['view']->assign('langauge', $language);
+    Tygh::$app['view']->assign('email', $order_info['email']);
+    Tygh::$app['view']->assign('price', $price);
+    Tygh::$app['view']->assign('currency', $currency);
+    Tygh::$app['view']->assign('transaction', $order_id . '_' . uniqid());
+    Tygh::$app['view']->assign('order_info', $order_info);
 }

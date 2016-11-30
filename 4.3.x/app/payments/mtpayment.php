@@ -5,10 +5,13 @@ defined('BOOTSTRAP') or die('Access denied');
 if (!defined('PAYMENT_NOTIFICATION')) {
     $_order_id = ($order_info['repaid']) ? ($order_id . '_' . $order_info['repaid']) : $order_id;
 
-    $psData = fn_get_payment_method_data($_SESSION['cart']['payment_id']);
+    $processor_id = db_get_field('SELECT processor_id FROM ?:payment_processors WHERE processor = \'MisterTango\'');
+    $payment_params = db_get_field('SELECT params FROM ?:payments WHERE processor_id = ?i LIMIT 1', $processor_id);
 
-    // Change order status to open as everything is automatic
-    fn_change_order_status($_order_id, 'P');
+    fn_change_order_status(
+        $_order_id,
+        isset($payment_params['status_pending'])?$payment_params['status_pending']:'O'
+    );
 
     // Lets clear cart
     $_SESSION['cart'] = array(
@@ -19,7 +22,11 @@ if (!defined('PAYMENT_NOTIFICATION')) {
     $_SESSION['shipping_rates'] = array();
     unset($_SESSION['shipping_hash']);
 
-    db_query('DELETE FROM ?:user_session_products WHERE session_id = ?s AND type = ?s', Session::get_id(), 'C');
+    db_query(
+        'DELETE FROM ?:user_session_products WHERE session_id = ?s AND type = ?s',
+        Tygh::$app['session']->getID(),
+        'C'
+    );
 
     fn_redirect(fn_url("mtpayment.information?order=$_order_id&init=1"));
 }

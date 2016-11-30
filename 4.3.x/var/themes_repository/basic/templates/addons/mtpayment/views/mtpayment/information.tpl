@@ -9,9 +9,10 @@
         <td>{$order_info.timestamp|date_format:"%y-%m-%d %H:%M:%S"}</td>
         <td>
             {include file="common/status.tpl" status=$order_info.status display="view"}
-            {if $order_info.status eq 'P'}
+            {if $order_info.status eq 'O'}
             <a href="#"
                class="mtpayment-submit"
+               data-order="{$order_info.order_id}"
                data-language="{$language}"
                data-customer-email="{$email}"
                data-amount="{$price}"
@@ -35,9 +36,7 @@
         isOpen: false,
         success: false,
         order: null,
-        disallowDifferentPayment: false,
         isOfflinePayment: false,
-        urlSuccessPage: null,
         transaction: null,
         customerEmail: null,
         amount: null,
@@ -66,7 +65,7 @@
 
                 MTPayment.order = null;
 
-                if (typeof $(this).data('id-order') != 'undefined') {
+                if (typeof $(this).data('order') != 'undefined') {
                     MTPayment.order = $(this).data('order');
                 }
 
@@ -102,7 +101,11 @@
             MTPayment.onSuccess(response);
         },
         onSuccess: function (response) {
-            location.reload();
+            MTPayment.success = true;
+
+            if (MTPayment.isOpened === false) {
+                MTPayment.afterSuccess();
+            }
         },
         onClose: function () {
             MTPayment.isOpen = false;
@@ -112,10 +115,15 @@
             }
         },
         afterSuccess: function () {
+            if (MTPAYMENT_INIT) {
+                window.location.href = '/index.php?dispatch=checkout.complete&order_id=' + MTPayment.order;
+
+                return;
+            }
+
             window.location.href = '/index.php?dispatch=mtpayment.information&order=' + MTPayment.order;
         }
     };
-
 
     $.getScript("https://payment.mistertango.com/resources/scripts/mt.collect.js?v={/literal}{$smarty.now|escape:'htmlall':'UTF-8'}{literal}", function (data, textStatus, jqxhr) {
         MTPayment.init();

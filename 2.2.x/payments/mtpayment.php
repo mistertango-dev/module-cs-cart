@@ -7,11 +7,13 @@ if (!defined('AREA')) {
 if (!defined('PAYMENT_NOTIFICATION')) {
     $_order_id = ($order_info['repaid']) ? ($order_id . '_' . $order_info['repaid']) : $order_id;
 
-    $url      = (strpos($_SERVER['SERVER_PROTOCOL'], 'HTTPS') !== false ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
-    $url      = strtr($url, array('index.php' => 'index.php?dispatch=mtpayment.information&order='.$_order_id.'&init=1'));
+    $processor_id = db_get_field('SELECT processor_id FROM ?:payment_processors WHERE processor = \'MisterTango\'');
+    $payment_params = db_get_field('SELECT params FROM ?:payments WHERE processor_id = ?i LIMIT 1', $processor_id);
 
-    // Change order status to open as everything is automatic
-    fn_change_order_status($_order_id, 'P');
+    fn_change_order_status(
+        $_order_id,
+        isset($payment_params['status_pending'])?$payment_params['status_pending']:'O'
+    );
 
     // Lets clear cart
     $_SESSION['cart'] = array(
@@ -24,5 +26,5 @@ if (!defined('PAYMENT_NOTIFICATION')) {
 
     db_query('DELETE FROM ?:user_session_products WHERE session_id = ?s AND type = ?s', Session::get_id(), 'C');
 
-    fn_redirect($url);
+    fn_redirect(fn_url("mtpayment.information?order=$_order_id&init=1"));
 }

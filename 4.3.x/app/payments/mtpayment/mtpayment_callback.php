@@ -83,9 +83,6 @@ function mtpayment_close_order($order_id, $response)
         throw new Exception('Error occurred: Payment script is invalid');
     }
 
-    $response['order_status'] = 'P';
-
-    fn_start_payment($order_id, false);
     fn_finish_payment($order_id, $response, false);
     fn_order_placement_routines($order_id, false);
 }
@@ -143,6 +140,7 @@ if (empty($callback)) {
             array(
                 'currency' => $data->custom->data->currency,
                 'amount' => $data->custom->data->amount,
+                'order_status' => isset($payment_params['status_pending'])?$payment_params['status_pending']:'P',
             )
         );
     } catch (MisterTangoOrderPlacementRoutinesException $e) {

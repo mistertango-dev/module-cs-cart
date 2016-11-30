@@ -11,3 +11,23 @@
     <label for="secret_key">Secret key:</label>
     <input type="text" name="payment_data[processor_params][secret_key]" id="secret_key" value="{$processor_params.secret_key}" class="input-text" size="255" />
 </div>
+
+{assign var="statuses" value=$smarty.const.STATUSES_ORDER|fn_get_statuses:true}
+
+<div class="form-field">
+    <label for="status_pending">Status pending:</label>
+    <select name="payment_data[processor_params][status_pending]" id="status_pending">
+        {foreach from=$statuses item="s" key="k"}
+        <option value="{$k}" {if $processor_params.status_pending == $k || !$processor_params.status_pending && $k == 'O'}selected="selected"{/if}>{$s}</option>
+        {/foreach}
+    </select>
+</div>
+
+<div class="form-field">
+    <label for="status_paid">Status paid:</label>
+    <select name="payment_data[processor_params][status_paid]" id="status_paid">
+        {foreach from=$statuses item="s" key="k"}
+        <option value="{$k}" {if $processor_params.status_paid == $k || !$processor_params.status_paid && $k == 'O'}selected="selected"{/if}>{$s}</option>
+        {/foreach}
+    </select>
+</div>
