@@ -1,7 +1,38 @@
 <?php
 
+use Tygh\Registry;
+
 if (!defined('AREA')) {
     die('Access denied');
+}
+
+/**
+ * @param $plain_text
+ * @param $key
+ *
+ * @return string
+ */
+function mtpayment_hash_encrypt($plain_text, $key)
+{
+    $key = str_pad($key, 32, "\0");
+
+    $plain_text = trim( $plain_text );
+    # create a random IV to use with CBC encoding
+    $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+    $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
+
+    # creates a cipher text compatible with AES (Rijndael block size = 128)
+    # to keep the text confidential
+    # only suitable for encoded input that never ends with value 00h (because of default zero padding)
+    $ciphertext = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key,
+        $plain_text, MCRYPT_MODE_CBC, $iv);
+
+    # prepend the IV for it to be available for decryption
+    $ciphertext = $iv . $ciphertext;
+
+    # encode the resulting cipher text so it can be represented by a string
+    $sResult = base64_encode($ciphertext);
+    return trim( $sResult );
 }
 
 if ($mode == 'information') {
@@ -27,26 +58,33 @@ if ($mode == 'information') {
     $currencyCo = db_get_field("SELECT ?:currencies.coefficient FROM ?:currencies WHERE ?:currencies.currency_code = ?s", $currency);
     $price = number_format($order_info['total'] / $currencyCo, 2, '.', '');
 
-    Tygh::$app['view']->assign('init', isset($_GET['init']) && $_GET['init'] == 1 ? 'true' : 'false');
-    Tygh::$app['view']->assign('username', $processor_params['username']);
-    Tygh::$app['view']->assign('langauge', $language);
-    Tygh::$app['view']->assign('email', $order_info['email']);
-    Tygh::$app['view']->assign('price', $price);
-    Tygh::$app['view']->assign('currency', $currency);
-    Tygh::$app['view']->assign('transaction', $order_id . '_' . uniqid());
-    Tygh::$app['view']->assign('order_info', $order_info);
-    Tygh::$app['view']->assign(
+    //Check for callback options
+    $overrideCallbackUrl = 0;
+    $callbackUrl = null;
+    if (isset($processor_params['secret_key'])) {
+        if (isset($processor_params['override_callback_url']) && $processor_params['override_callback_url']) {
+            $overrideCallbackUrl = 1;
+        }
+
+        $callbackUrl = Registry::get('config.current_location').'/app/payments/mtpayment/mtpayment_callback.php';
+        if(isset($processor_params['callback_url']) && !empty($processor_params['callback_url'])) {
+            $callbackUrl = $processor_params['callback_url'];
+        }
+        $callbackUrl = mtpayment_hash_encrypt($callbackUrl, $processor_params['secret_key']);
+    }
+
+    Registry::get('view')->assign('init', isset($_GET['init']) && $_GET['init'] == 1 ? 'true' : 'false');
+    Registry::get('view')->assign('username', $processor_params['username']);
+    Registry::get('view')->assign('langauge', $language);
+    Registry::get('view')->assign('email', $order_info['email']);
+    Registry::get('view')->assign('price', $price);
+    Registry::get('view')->assign('currency', $currency);
+    Registry::get('view')->assign('transaction', $order_id . '_' . uniqid());
+    Registry::get('view')->assign('order_info', $order_info);
+    Registry::get('view')->assign(
         'status_pending',
         isset($processor_params['status_pending'])?$processor_params['status_pending']:'O'
     );
-    Tygh::$app['view']->assign(
-        'override_callback_url',
-        isset($processor_params['override_callback_url']) && $processor_params['override_callback_url']?1:0
-    );
-    Tygh::$app['view']->assign(
-        'callback_url',
-        isset($processor_params['callback_url']) && !empty($processor_params['callback_url'])
-            ?$processor_params['callback_url']
-            :Registry::get('config.current_location').'/payments/mtpayment/mtpayment_callback.php'
-    );
+    Registry::get('view')->assign('override_callback_url', $overrideCallbackUrl);
+    Registry::get('view')->assign('callback_url', $callbackUrl);
 }

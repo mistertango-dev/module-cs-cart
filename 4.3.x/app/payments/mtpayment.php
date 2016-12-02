@@ -1,12 +1,14 @@
 <?php
 
+use Tygh\Session;
+
 defined('BOOTSTRAP') or die('Access denied');
 
 if (!defined('PAYMENT_NOTIFICATION')) {
     $_order_id = ($order_info['repaid']) ? ($order_id . '_' . $order_info['repaid']) : $order_id;
 
     $processor_id = db_get_field('SELECT processor_id FROM ?:payment_processors WHERE processor = \'MisterTango\'');
-    $payment_params = db_get_field('SELECT params FROM ?:payments WHERE processor_id = ?i LIMIT 1', $processor_id);
+    $payment_params = db_get_field('SELECT processor_params FROM ?:payments WHERE processor_id = ?i LIMIT 1', $processor_id);
 
     fn_change_order_status(
         $_order_id,
@@ -24,7 +26,7 @@ if (!defined('PAYMENT_NOTIFICATION')) {
 
     db_query(
         'DELETE FROM ?:user_session_products WHERE session_id = ?s AND type = ?s',
-        Tygh::$app['session']->getID(),
+        Session::getId(),
         'C'
     );
 

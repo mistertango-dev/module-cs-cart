@@ -8,37 +8,7 @@ class MisterTangoOrderPlacementRoutinesException extends Exception
 {
 }
 
-require dirname(dirname(__DIR__)) . '/prepare.php';
-require dirname(dirname(__DIR__)) . '/init.php';
-
-/**
- * @param $plain_text
- * @param $key
- *
- * @return string
- */
-function mtpayment_hash_encrypt($plain_text, $key)
-{
-    $key = str_pad($key, 32, "\0");
-
-    $plain_text = trim($plain_text);
-    # create a random IV to use with CBC encoding
-    $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
-    $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
-
-    # creates a cipher text compatible with AES (Rijndael block size = 128)
-    # to keep the text confidential
-    # only suitable for encoded input that never ends with value 00h (because of default zero padding)
-    $ciphertext = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key,
-        $plain_text, MCRYPT_MODE_CBC, $iv);
-
-    # prepend the IV for it to be available for decryption
-    $ciphertext = $iv . $ciphertext;
-
-    # encode the resulting cipher text so it can be represented by a string
-    $sResult = base64_encode($ciphertext);
-    return trim($sResult);
-}
+require dirname(dirname(dirname(__DIR__))) . '/init.php';
 
 /**
  * @param $encoded_text
@@ -72,15 +42,15 @@ function mtpayment_close_order($order_id, $response)
     $order_info = fn_get_order_info($order_id);
 
     if ($response['currency'] != $order_info['secondary_currency']) {
-        throw new Exception('Error occurred: The currency does not match');
+        throw new Exception('The currency does not match');
     }
 
     if (intval(number_format($response['amount'], 2, '', '')) < intval(number_format($order_info['total'], 2, '', ''))) {
-        throw new Exception('Error occurred: Amount is lower than required');
+        throw new Exception('Amount is lower than required');
     }
 
     if (!fn_check_payment_script('mtpayment.php', $order_id)) {
-        throw new Exception('Error occurred: Payment script is invalid');
+        throw new Exception('Payment script is invalid');
     }
 
     fn_finish_payment($order_id, $response, false);
@@ -96,7 +66,7 @@ if (empty($hash)) {
 }
 
 $processor_id = db_get_field('SELECT processor_id FROM ?:payment_processors WHERE processor = \'MisterTango\'');
-$payment_params = db_get_field('SELECT params FROM ?:payments WHERE processor_id = ?i LIMIT 1', $processor_id);
+$payment_params = db_get_field('SELECT processor_params FROM ?:payments WHERE processor_id = ?i LIMIT 1', $processor_id);
 
 if (empty($payment_params)) {
     die('Error occurred: Could not retrieve processor params');

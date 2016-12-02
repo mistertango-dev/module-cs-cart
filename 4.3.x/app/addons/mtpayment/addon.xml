@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<addon scheme="3.0" edition_type="ROOT,ULT:VENDOR">
+<addon scheme="2.0" edition_type="ROOT,ULT:VENDOR">
     <id>mtpayment</id>
     <version>1.0</version>
     <default_language>en</default_language>
@@ -9,7 +9,7 @@
     <status>active</status>
     <compatibility>
         <core_version>
-            <min>4.3.0</min>
+            <min>4.1.0</min>
             <max>4.3.10</max>
         </core_version>
     </compatibility>
