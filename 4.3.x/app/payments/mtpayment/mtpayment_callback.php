@@ -84,7 +84,7 @@ function mtpayment_close_order($order_id, $response)
     }
 
     fn_finish_payment($order_id, $response, false);
-    fn_order_placement_routines($order_id, false);
+    fn_order_placement_routines('save', $order_id, false, true);
 }
 
 $hash = isset($_POST['hash']) ? $_POST['hash'] : (isset($_GET['hash']) ? $_GET['hash'] : null);
@@ -104,12 +104,11 @@ if (empty($payment_params)) {
 
 $processor_params = unserialize($payment_params);
 
-$data = json_decode(
-    mtpayment_hash_decrypt(
-        $hash,
-        Mage::helper('mtpayment/data')->getSecretKey()
-    )
-);
+if (!isset($processor_params['secret_key']) || empty($processor_params['secret_key'])) {
+    die('Error occurred: Could not retrieve secret key');
+}
+
+$data = json_decode(mtpayment_hash_decrypt($hash, $processor_params['secret_key']));
 $data->custom = isset($data->custom) ? json_decode($data->custom) : null;
 
 if (empty($data->custom) || empty($data->custom->description)) {
@@ -140,7 +139,7 @@ if (empty($callback)) {
             array(
                 'currency' => $data->custom->data->currency,
                 'amount' => $data->custom->data->amount,
-                'order_status' => isset($payment_params['status_pending'])?$payment_params['status_pending']:'P',
+                'order_status' => isset($processor_params['status_paid'])?$processor_params['status_paid']:'P',
             )
         );
     } catch (MisterTangoOrderPlacementRoutinesException $e) {

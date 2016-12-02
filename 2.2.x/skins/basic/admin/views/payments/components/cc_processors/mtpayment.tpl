@@ -31,3 +31,13 @@
         {/foreach}
     </select>
 </div>
+
+<div class="form-field">
+    <label for="override_callback_url">Override callback url?</label>
+    <input type="checkbox" name="payment_data[processor_params][override_callback_url]" id="override_callback_url" value="1"{if $processor_params.override_callback_url == 1} checked="checked"{/if} />
+</div>
+
+<div class="form-field">
+    <label for="callback_url">Callback url:</label>
+    <input type="text" name="payment_data[processor_params][callback_url]" id="callback_url" value="{$processor_params.callback_url}" class="input-text" size="255" />
+</div>

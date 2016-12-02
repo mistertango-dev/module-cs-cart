@@ -35,4 +35,18 @@ if ($mode == 'information') {
     Tygh::$app['view']->assign('currency', $currency);
     Tygh::$app['view']->assign('transaction', $order_id . '_' . uniqid());
     Tygh::$app['view']->assign('order_info', $order_info);
+    Tygh::$app['view']->assign(
+        'status_pending',
+        isset($processor_params['status_pending'])?$processor_params['status_pending']:'O'
+    );
+    Tygh::$app['view']->assign(
+        'override_callback_url',
+        isset($processor_params['override_callback_url']) && $processor_params['override_callback_url']?1:0
+    );
+    Tygh::$app['view']->assign(
+        'callback_url',
+        isset($processor_params['callback_url']) && !empty($processor_params['callback_url'])
+            ?$processor_params['callback_url']
+            :Registry::get('config.current_location').'/payments/mtpayment/mtpayment_callback.php'
+    );
 }

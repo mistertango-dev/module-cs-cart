@@ -7,13 +7,11 @@ if (!defined('AREA')) {
 if (!defined('PAYMENT_NOTIFICATION')) {
     $_order_id = ($order_info['repaid']) ? ($order_id . '_' . $order_info['repaid']) : $order_id;
 
-    $processor_id = db_get_field('SELECT processor_id FROM ?:payment_processors WHERE processor = \'MisterTango\'');
-    $payment_params = db_get_field('SELECT params FROM ?:payments WHERE processor_id = ?i LIMIT 1', $processor_id);
+    $processor_data = fn_get_processor_data($order_info['payment_method']['payment_id']);
+    $processor_params = $processor_data['params'];
+    $status_pending = isset($processor_params['status_pending'])?$processor_params['status_pending']:'O';
 
-    fn_change_order_status(
-        $_order_id,
-        isset($payment_params['status_pending'])?$payment_params['status_pending']:'O'
-    );
+    fn_change_order_status($_order_id, $status_pending);
 
     // Lets clear cart
     $_SESSION['cart'] = array(

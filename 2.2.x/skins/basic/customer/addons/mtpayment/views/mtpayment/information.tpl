@@ -11,7 +11,7 @@
         <td>{$order_info.timestamp|date_format:"%y-%m-%d %H:%M:%S"}</td>
         <td>
             {include file="common_templates/status.tpl" status=$order_info.status display="view" name="update_order[status]"}
-            {if $order_info.status eq 'O'}
+            {if $order_info.status eq $status_pending}
             <a href="#"
                class="mtpayment-submit"
                data-order="{$order_info.order_id}"
@@ -31,6 +31,8 @@
 <script>
     var MTPAYMENT_INIT = {$init};
     var MTPAYMENT_USERNAME = '{$username}';
+    var MTPAYMENT_OVERRIDE_CALLBACK_URL = {$override_callback_url};
+    var MTPAYMENT_CALLBACK_URL = '{$callback_url}';
 </script>
 {literal}
 <script>
@@ -82,6 +84,10 @@
                 mrTangoCollect.set.currency(MTPayment.currency);
                 mrTangoCollect.set.description(MTPayment.transaction);
                 mrTangoCollect.set.lang(MTPayment.language);
+
+                if (MTPAYMENT_OVERRIDE_CALLBACK_URL) {
+                    mrTangoCollect.custom = {'callback': MTPAYMENT_CALLBACK_URL};
+                }
 
                 MTPayment.isOpen = true;
                 mrTangoCollect.submit();
