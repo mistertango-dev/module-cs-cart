@@ -52,8 +52,6 @@ function mtpayment_close_order($order_id, $response)
 
 $hash = isset($_POST['hash'])?$_POST['hash']:(isset($_GET['hash'])?$_GET['hash']:null);
 
-//$hash = true;
-
 if (empty($hash)) {
     die('Error occurred: Empty hash');
 }
@@ -77,14 +75,6 @@ $data->custom = isset($data->custom) ? json_decode($data->custom) : null;
 if (empty($data->custom) || empty($data->custom->description)) {
     die('Error occurred: Custom description is empty');
 }
-
-/*$data = new stdClass();
-$data->callback_uuid = uniqid();
-$data->custom = new stdClass();
-$data->custom->description = '2_1235245654';
-$data->custom->data = new stdClass();
-$data->custom->data->currency = 'USD';
-$data->custom->data->amount = '585.45';*/
 
 $transaction = explode('_', $data->custom->description);
 
